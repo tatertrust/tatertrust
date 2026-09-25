@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { type ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 import appCss from "../styles.css?url";
 import favicon from "../assets/trust-logo-upscaled.png";
@@ -129,6 +130,7 @@ function RootComponent() {
       <MagneticCursor />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Analytics />
     </QueryClientProvider>
   );
 }
