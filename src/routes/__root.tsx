@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import appCss from "../styles.css?url";
 import favicon from "../assets/trust-logo-upscaled.png";
@@ -88,11 +89,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Serving humanity since 2011 — education, healthcare and community welfare.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://tatertrust.org/" },
+      { property: "og:image", content: "https://tatertrust.org/og-image.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://tatertrust.org/og-image.jpg" },
       { name: "theme-color", content: "#1E3A5F" },
     ],
     links: [
       { rel: "icon", type: "image/png", href: favicon },
+      { rel: "canonical", href: "https://tatertrust.org/" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -118,6 +123,7 @@ function RootShell({ children }: { children: ReactNode }) {
         {children}
         <Scripts />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
