@@ -953,6 +953,7 @@ function Founders() {
                 <img
                   src={f.img}
                   alt={f.name}
+                  loading="lazy"
                   className="h-40 w-40 rounded-full object-cover border-4 border-[var(--brand-gold)]/40 shadow-lg"
                 />
                 <div className="mt-5 font-display text-lg text-[var(--brand-brown)]">
@@ -1249,6 +1250,7 @@ function DeepDive() {
                       <img
                         src={p.logo}
                         alt={p.name}
+                        loading="lazy"
                         className="mx-auto h-16 w-auto object-contain mb-2"
                       />
                     ) : (
@@ -1588,6 +1590,7 @@ function TrustReportVideo() {
           <img
             src={trustLogo}
             alt=""
+            loading="lazy"
             className="absolute inset-0 h-full w-full object-contain p-10 sm:p-14"
           />
           <span className="absolute inset-0 flex items-center justify-center">
@@ -1822,6 +1825,7 @@ function Footer() {
             <img
               src={trustLogo}
               alt="Trust"
+              loading="lazy"
               className="h-12 w-12 object-contain rounded-full bg-white p-1"
             />
             <div>
