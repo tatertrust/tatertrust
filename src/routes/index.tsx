@@ -776,34 +776,19 @@ function Hero() {
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-10 grid md:grid-cols-12 gap-10 lg:gap-12 items-center">
         <div className="md:col-span-8">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 backdrop-blur px-4 py-1.5 text-xs tracking-[0.2em] uppercase text-[var(--brand-brown)]"
-          >
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 backdrop-blur px-4 py-1.5 text-xs tracking-[0.2em] uppercase text-[var(--brand-brown)]">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-green)]" />
             Serving humanity since 2011
-          </motion.div>
+          </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="mt-6 sm:mt-8 font-display text-[2.6rem] sm:text-5xl lg:text-[5.25rem] leading-[1.05] tracking-tight text-balance text-[var(--brand-brown)]"
-          >
+          <h1 className="mt-6 sm:mt-8 font-display text-[2.6rem] sm:text-5xl lg:text-[5.25rem] leading-[1.05] tracking-tight text-balance text-[var(--brand-brown)]">
             Sohan Kanwar Mangilal Tater{" "}
             <span className="italic text-[var(--brand-green)]">
               Charitable Trust
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="mt-8 max-w-2xl text-lg sm:text-xl leading-relaxed text-foreground/70 text-balance"
-          >
+          <p className="mt-8 max-w-2xl text-lg sm:text-xl leading-relaxed text-foreground/70 text-balance">
             Transforming lives through{" "}
             <span className="text-[var(--brand-brown)] font-medium">
               education
@@ -817,14 +802,9 @@ function Hero() {
               compassion
             </span>{" "}
             across communities and generations.
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-10 flex flex-wrap gap-3"
-          >
+          <div className="mt-10 flex flex-wrap gap-3">
             <a
               href="#work"
               className="group inline-flex items-center gap-2 rounded-full bg-[var(--brand-green)] px-7 py-3.5 text-sm font-medium text-white transition hover:opacity-90 hover:shadow-xl hover:shadow-[var(--brand-green)]/20"
@@ -841,15 +821,10 @@ function Hero() {
             >
               Contact us
             </a>
-          </motion.div>
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, delay: 0.4 }}
-          className="hidden md:flex md:col-span-4 justify-center"
-        >
+        <div className="hidden md:flex md:col-span-4 justify-center">
           <div className="relative isolate flex h-64 w-64 lg:h-96 lg:w-96 items-center justify-center">
             <div className="absolute inset-4 lg:inset-6 rounded-full bg-[var(--brand-gold)]/35 blur-3xl" />
             <img
@@ -858,7 +833,7 @@ function Hero() {
               className="relative h-52 w-52 lg:h-80 lg:w-80 object-contain contrast-110 saturate-110 drop-shadow-[0_22px_34px_rgba(71,54,64,0.14)]"
             />
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Marquee of impact */}
