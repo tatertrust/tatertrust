@@ -991,7 +991,7 @@ function OurWork() {
           </div>
         </Reveal>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}
             initial={{ opacity: 0, y: 16 }}
@@ -1345,7 +1345,7 @@ function Gallery() {
         <div className="mt-14 flex gap-5">
           {columns.map((col, ci) => (
             <div key={ci} className="flex min-w-0 flex-1 flex-col gap-5">
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence mode="popLayout" initial={false}>
                 {col.map((g) => (
                   <motion.button
                     key={`${g.caption}-${g.i}`}

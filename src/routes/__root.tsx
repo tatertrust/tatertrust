@@ -12,7 +12,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import appCss from "../styles.css?url";
-import favicon from "../assets/trust-logo-upscaled.png";
 import { MagneticCursor } from "../components/MagneticCursor";
 
 function NotFoundComponent() {
@@ -96,15 +95,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#1E3A5F" },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: favicon },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "canonical", href: "https://tatertrust.org/" },
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap",
-      },
     ],
   }),
   shellComponent: RootShell,
