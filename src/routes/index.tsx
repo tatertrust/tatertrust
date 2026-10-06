@@ -97,12 +97,12 @@ export const Route = createFileRoute("/")({
     meta: [
       {
         title:
-          "Sohan Kanwar Mangilal Tater Charitable Trust - Serving Humanity Since 2011",
+          "Sohan Kanwar Mangilal Tater Charitable Trust",
       },
       {
         name: "description",
         content:
-          "A charitable foundation transforming lives through education, healthcare, and compassion across Tamil Nadu and Rajasthan since 2011.",
+          "Sohan Kanwar Mangilal Tater Charitable Trust, Chennai: education, healthcare and community welfare across Tamil Nadu and Rajasthan since 2011.",
       },
       {
         property: "og:title",
@@ -1594,7 +1594,7 @@ function About() {
                 A quiet legacy of service.
               </h2>
             </Reveal>
-            <div className="space-y-6 text-lg text-foreground/75 leading-relaxed">
+            <div className="space-y-6 text-lg text-foreground/75 leading-relaxed" data-nosnippet>
               <Reveal delay={0.1}>
                 <p>
                   Established in{" "}

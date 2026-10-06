@@ -76,11 +76,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sohan Kanwar Mangilal Tater Charitable Trust — Serving Humanity Since 2011" },
+      { title: "Sohan Kanwar Mangilal Tater Charitable Trust" },
       {
         name: "description",
         content:
-          "A charitable foundation transforming lives through education, healthcare, and compassion across Tamil Nadu and Rajasthan since 2011.",
+          "Sohan Kanwar Mangilal Tater Charitable Trust, Chennai: education, healthcare and community welfare across Tamil Nadu and Rajasthan since 2011.",
       },
       { property: "og:title", content: "Sohan Kanwar Mangilal Tater Charitable Trust" },
       {
