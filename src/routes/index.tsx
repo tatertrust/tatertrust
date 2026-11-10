@@ -30,7 +30,7 @@ import { IndiaMap, places } from "@/components/IndiaMap";
 import { Navbar } from "@/components/site/Navbar";
 import { Reveal } from "@/components/site/Reveal";
 import { Counter } from "@/components/site/Counter";
-import trustLogo from "@/assets/trust-logo-upscaled.png";
+import trustLogo from "@/assets/trust-logo-upscaled.webp";
 import heroImage from "@/assets/hero image.jpeg";
 import ryaLogo from "@/assets/rya-logo.png";
 import mahaveerLogo from "@/assets/mahaveer-logo.png";
@@ -91,6 +91,12 @@ import cattleFeedingGaushalaImg from "@/assets/Cattle Feeding in Gaushala.jpeg";
 import mangilalChandjiTaterImg from "@/assets/founder-mangilal-chandji-tater.jpeg";
 import sohanKanwarTaterImg from "@/assets/founder-sohan-kanwar-tater.jpeg";
 import mangalChandTaterImg from "@/assets/founder-mangal-chand-tater.jpeg";
+import sureshChandTaterImg from "@/assets/trustee-suresh-chand-tater.jpeg";
+import padamChandTaterImg from "@/assets/trustee-padam-chand-tater.jpeg";
+import kamalChandTaterImg from "@/assets/trustee-kamal-chand-tater.jpeg";
+import dineshChandTaterImg from "@/assets/trustee-dinesh-chand-tater.jpeg";
+import arihantTaterImg from "@/assets/trustee-arihant-tater.jpeg";
+import praveshTaterImg from "@/assets/trustee-pravesh-tater.jpeg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -153,6 +159,15 @@ const founders = [
     years: "1955 – 2025",
     img: mangalChandTaterImg,
   },
+];
+
+const trustees = [
+  { name: "Suresh Chand Tater", img: sureshChandTaterImg },
+  { name: "Padam Chand Tater", img: padamChandTaterImg },
+  { name: "Kamal Chand Tater", img: kamalChandTaterImg },
+  { name: "Dinesh Chand Tater", img: dineshChandTaterImg },
+  { name: "Arihant Tater", img: arihantTaterImg },
+  { name: "Pravesh Tater", img: praveshTaterImg },
 ];
 
 const values = [
@@ -1674,6 +1689,35 @@ function About() {
           ))}
         </div>
 
+        {/* Trustees */}
+        <div>
+          <Reveal>
+            <p className="text-xs tracking-[0.22em] uppercase text-[var(--brand-green)] font-medium">
+              Leadership
+            </p>
+            <h2 className="mt-4 font-display text-4xl sm:text-5xl leading-tight">
+              Our Trustees
+            </h2>
+          </Reveal>
+          <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-10">
+            {trustees.map((t, i) => (
+              <Reveal key={t.name} delay={i * 0.05}>
+                <div className="flex flex-col items-center text-center">
+                  <img
+                    src={t.img}
+                    alt={t.name}
+                    loading="lazy"
+                    className="h-36 w-36 rounded-full object-cover border-4 border-[var(--brand-gold)]/40 shadow-lg"
+                  />
+                  <div className="mt-5 font-display text-lg text-[var(--brand-brown)]">
+                    {t.name}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
         {/* Values */}
         <div>
           <Reveal>
@@ -1731,7 +1775,7 @@ function Contact() {
                   title: "Address",
                   text: "No 52, Maddox Street, 1st Floor, Vepery, Chennai 600007",
                 },
-                { icon: Phone, title: "Phone", text: "+91 95661 11058" },
+                { icon: Phone, title: "Phone", text: "+91 98419 11058" },
                 { icon: Mail, title: "Email", text: "smtaterctrust@gmail.com" },
                 {
                   icon: Clock,

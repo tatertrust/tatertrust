@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoAsset from "@/assets/trust-logo-upscaled.png";
+import logoAsset from "@/assets/trust-logo-upscaled.webp";
 
 const links = [
   { href: "#impact", label: "Impact" },

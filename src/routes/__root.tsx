@@ -115,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               image: "https://tatertrust.org/og-image.jpg",
               foundingDate: "2011",
               email: "smtaterctrust@gmail.com",
-              telephone: "+91 95661 11058",
+              telephone: "+91 98419 11058",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "No 52, Maddox Street, 1st Floor, Vepery",
