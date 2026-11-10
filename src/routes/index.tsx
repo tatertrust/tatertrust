@@ -134,7 +134,7 @@ const impactStats = [
     prefix: "₹",
     format: "inr" as const,
   },
-  { value: 6360, label: "Babies delivered" },
+  { value: 6360, label: "Babies delivered at Trust's hospital in Merta" },
   { value: 166011, label: "Eye camp screenings" },
   { value: 50448, label: "Eye surgeries" },
   { value: 14339, label: "Spectacles distributed" },
