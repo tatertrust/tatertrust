@@ -56,8 +56,8 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     try {
       await login({ data: { password } });
       onSuccess();
-    } catch {
-      setError("Wrong password.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign-in failed.");
     } finally {
       setBusy(false);
     }

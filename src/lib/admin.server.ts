@@ -43,7 +43,7 @@ const COOKIE = "admin_session";
 const MAX_AGE_S = 60 * 60 * 24 * 7;
 
 function adminPassword() {
-  const p = process.env.ADMIN_PASSWORD;
+  const p = process.env.ADMIN_PASSWORD?.trim();
   if (!p) throw new Error("ADMIN_PASSWORD is not set.");
   return p;
 }
