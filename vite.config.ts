@@ -9,10 +9,8 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     tailwindcss(),
-    tanstackStart({
-      server: { entry: "server" },
-      prerender: { enabled: true, crawlLinks: true },
-    }),
+    // No prerender: the homepage reads admin-edited content per request (CDN-cached 60s).
+    tanstackStart({ server: { entry: "server" } }),
     nitro({ preset: "vercel" }),
     react(),
   ],

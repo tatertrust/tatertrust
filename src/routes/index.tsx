@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,79 +25,14 @@ import {
   ChevronRight,
   Play,
 } from "lucide-react";
-import { IndiaMap, places } from "@/components/IndiaMap";
+import { IndiaMap } from "@/components/IndiaMap";
 
 import { Navbar } from "@/components/site/Navbar";
 import { Reveal } from "@/components/site/Reveal";
 import { Counter } from "@/components/site/Counter";
-import { getImpactValues, withValues } from "@/lib/stats.functions";
+import { getSiteContent } from "@/lib/content.functions";
+import { impactFields, type Content } from "@/lib/content";
 import trustLogo from "@/assets/trust-logo-upscaled.webp";
-import heroImage from "@/assets/hero image.jpeg";
-import ryaLogo from "@/assets/rya-logo.png";
-import mahaveerLogo from "@/assets/mahaveer-logo.png";
-import sankaraLogo from "@/assets/sankara-logo.png";
-import lionsLogo from "@/assets/lions-logo.png";
-import jainLogo from "@/assets/jain-logo.png";
-import vesLogo from "@/assets/ves-logo.png";
-import adinathLogo from "@/assets/adinath-logo.png";
-import rmdCareTrustLogo from "@/assets/rmd-care-trust-logo.jpeg";
-import sevaBharathiLogo from "@/assets/seva-bharathi-logo.jpeg";
-import chennaiMetroMahaveerLogo from "@/assets/chennai-metro-mahaveer-logo.jpeg";
-import rajasthaniAssociationTnLogo from "@/assets/rajasthani-association-tn-logo.png";
-import annualScholarshipCeremonyChennaiImg from "@/assets/gallery-annual-scholarship-ceremony-chennai.jpeg";
-import awardedRajasthanShreeImg from "@/assets/gallery-awarded-rajasthan-shree-rajasthan-sangh-chennai.jpeg";
-import cataractSurgeryChennaiMetroMahaveerImg from "@/assets/gallery-cataract-surgery-chennai-metro-mahaveer.jpeg";
-import cataractSurgeryFollowUpImg from "@/assets/gallery-cataract-surgery-follow-up.jpeg";
-import chaaraGodownNagaurImg from "@/assets/gallery-chaara-godown-nagaur.jpeg";
-import chaaraGodownNagaurPreviewImg from "@/assets/Chaara Godown Nagaur Preview.jpg";
-import foodDistributionDriveAkshayaTrustImg from "@/assets/gallery-food-distribution-drive-akshaya-trust.jpeg";
-import foodDistributionDriveNewImg from "@/assets/gallery-food-distribution-drive-new.jpeg";
-import foodDistributionDriveImg from "@/assets/gallery-food-distribution-drive.jpeg";
-import foodDistributionImg from "@/assets/gallery-food-distribution.jpeg";
-import freeEyeScreeningCampChennaiImg from "@/assets/gallery-free-eye-screening-camp-chennai.jpeg";
-import hallDonatedMarudharMertaCityImg from "@/assets/gallery-hall-donated-marudhar-merta-city.jpeg";
-import khwaspuraGaushalaShedImg from "@/assets/gallery-khwaspura-gaushala-shed.jpeg";
-import maternityWardInaugurationImg from "@/assets/gallery-maternity-ward-inauguration.jpeg";
-import maternityWardInaugurationPreviewImg from "@/assets/Maternity Ward Inauguration Preview.jpg";
-import mouSewaBhartiMultiSpecialtyHospitalImg from "@/assets/gallery-mou-sewa-bharti-multi-specialty-hospital.jpeg";
-import mouSewaBhartiMultiSpecialtyHospitalPreviewImg from "@/assets/MoU Sewa Bharti Multi Specialty Hospital Preview.jpg";
-import newbornCareUnitImg from "@/assets/gallery-newborn-care-unit.jpeg";
-import newbornCareUnitPreviewImg from "@/assets/Newborn Care Unit Preview.jpg";
-import prostheticsDistributionAdinathJainTrustImg from "@/assets/gallery-prosthetics-distribution-adinath-jain-trust-chennai.jpeg";
-import prostheticsDistributionImg from "@/assets/gallery-prosthetics-distribution.jpeg";
-import roomDonationDharamshalaLodgingImg from "@/assets/gallery-room-donation-dharamshala-lodging.jpeg";
-import sankaraEyeHospitalBlockImg from "@/assets/gallery-sankara-eye-hospital-block.jpeg";
-import tenthScholarshipDistributionImg from "@/assets/gallery-10th-scholarship-distribution-ceremony.jpeg";
-import tenthScholarshipDistributionPreviewImg from "@/assets/10th Scholarship Distribution Ceremony Preview.jpg";
-import eleventhScholarshipDistributionImg from "@/assets/gallery-11th-scholarship-distribution-ceremony.jpeg";
-import thirteenthScholarshipDistributionImg from "@/assets/gallery-13th-scholarship-distribution-439-students.jpeg";
-import twentyTwoLakhScholarshipDistributionImg from "@/assets/gallery-22-lakh-scholarship-distribution-ceremony.jpeg";
-import twentyTwoLakhScholarshipDistributionPreviewImg from "@/assets/22 Lakh Scholarship Distribution Ceremony Preview.jpg";
-import inaugurationVivekanandaVidyalayaImg from "@/assets/gallery-inauguration-vivekananda-vidyalaya.jpeg";
-import inaugurationVivekanandaVidyalayaPreviewImg from "@/assets/Inauguration Vivekananda Vidyalaya Preview.jpg";
-import maternityChildCareHomeHandoverImg from "@/assets/gallery-maternity-child-care-home-handover.jpeg";
-import maternityChildCareHomeHandoverPreviewImg from "@/assets/Maternity And Child Care Home Handover Preview.jpg";
-import maternityHomePlaquePresentationImg from "@/assets/gallery-maternity-home-plaque-presentation.jpeg";
-import maternityHospitalImg from "@/assets/gallery-maternity-hospital.jpeg";
-import vivekanandaVidyalayaImg from "@/assets/gallery-vivekananda-vidyalaya.jpeg";
-import multispecialityHospitalBhoomiPoojaImg from "@/assets/Multispeciality Hospital Bhoomi Pooja.jpeg";
-import bhoomiPoojaCeremonyVivekanandaImg from "@/assets/Bhoomi Pooja Ceremony Vivekananda Vidhyalaya.jpeg";
-import bhoomiPoojaCeremonyHospitalImg from "@/assets/Bhoomi Pooja Cermony Multi-speciality Hospital.jpeg";
-import bhoomiPoojaCancerHospitalGoonipalayamImg from "@/assets/Bhoomi Pooja Cancer Hospital Goonipalayam.jpg";
-import bhoomiPoojaCancerHospitalGoonipalayamPreviewImg from "@/assets/Bhoomi Pooja Cancer Hospital Goonipalayam Preview.jpg";
-import cancerHospitalGoonipalayamPressImg from "@/assets/Cancer and Palliative Care Hospital Goonipalayam Press Coverage.jpg";
-import cancerHospitalGoonipalayamPressPreviewImg from "@/assets/Cancer and Palliative Care Hospital Goonipalayam Press Coverage Preview.jpg";
-import sambhavnathJainMandirPrathisthaImg from "@/assets/Shri Sambhavnath Jain Mandir Prathistha Mahamahotsav.jpg";
-import cattleFeedingGaushalaImg from "@/assets/Cattle Feeding in Gaushala.jpeg";
-import mangilalChandjiTaterImg from "@/assets/founder-mangilal-chandji-tater.jpeg";
-import sohanKanwarTaterImg from "@/assets/founder-sohan-kanwar-tater.jpeg";
-import mangalChandTaterImg from "@/assets/founder-mangal-chand-tater.jpeg";
-import sureshChandTaterImg from "@/assets/trustee-suresh-chand-tater.jpeg";
-import padamChandTaterImg from "@/assets/trustee-padam-chand-tater.jpeg";
-import kamalChandTaterImg from "@/assets/trustee-kamal-chand-tater.jpeg";
-import dineshChandTaterImg from "@/assets/trustee-dinesh-chand-tater.jpeg";
-import arihantTaterImg from "@/assets/trustee-arihant-tater.jpeg";
-import praveshTaterImg from "@/assets/trustee-pravesh-tater.jpeg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -123,47 +57,17 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  // Content is editable at /admin, so render per request; the CDN caches it for a minute.
+  loader: () => getSiteContent(),
+  headers: () => ({
+    "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=600",
+  }),
   component: Index,
 });
 
+const useContent = (): Content => Route.useLoaderData();
+
 /* ───────────────────────── DATA ───────────────────────── */
-
-// Impact numbers are editable at /admin; defaults live in stats.functions.ts.
-function useImpactStats() {
-  const { data } = useQuery({
-    queryKey: ["impact-values"],
-    queryFn: () => getImpactValues(),
-    staleTime: 60_000,
-  });
-  return withValues(data);
-}
-
-const founders = [
-  {
-    name: "Mangilal Chandji Tater",
-    years: "1933 – 2011",
-    img: mangilalChandjiTaterImg,
-  },
-  {
-    name: "Sohan Kanwar Tater",
-    years: "1936 – 2017",
-    img: sohanKanwarTaterImg,
-  },
-  {
-    name: "Mangal Chand Tater",
-    years: "1955 – 2025",
-    img: mangalChandTaterImg,
-  },
-];
-
-const trustees = [
-  { name: "Suresh Chand Tater", img: sureshChandTaterImg },
-  { name: "Padam Chand Tater", img: padamChandTaterImg },
-  { name: "Kamal Chand Tater", img: kamalChandTaterImg },
-  { name: "Dinesh Chand Tater", img: dineshChandTaterImg },
-  { name: "Arihant Tater", img: arihantTaterImg },
-  { name: "Pravesh Tater", img: praveshTaterImg },
-];
 
 const values = [
   { icon: Heart, title: "Compassion", text: "Empathy in every act." },
@@ -178,267 +82,6 @@ const values = [
   },
 ];
 
-type Project = {
-  name: string;
-  location?: string;
-  impact?: string;
-  desc: string;
-};
-const work: Record<
-  "Education" | "Healthcare" | "Community" | "Animal",
-  Project[]
-> = {
-  Education: [
-    {
-      name: "Scholarship Programme",
-      location: "Pan - India",
-      impact: "4,820 Students",
-      desc: "Annual merit & need-based scholarships.",
-    },
-    {
-      name: "Vivekananda Education Society",
-      location: "Chennai",
-      impact: "Classroom Donation",
-      desc: "Infrastructure for holistic learning.",
-    },
-    {
-      name: "Jain Sohan Kanwar Mangilal Tater Vivekananda Vidhyalaya",
-      location: "Uttukottai, Tamil Nadu",
-      impact: "Future Campus",
-      desc: "4.36 Acres of Land donated for a school.",
-    },
-    {
-      name: "Rajasthan Education Trust",
-      location: "Rajasthan",
-      impact: "Regional Education",
-      desc: "Multi-year support to regional education.",
-    },
-    {
-      name: "Mahaveer Rajasthani Intl. School",
-      location: "Chennai",
-      impact: "Diamond Donor",
-      desc: "Multi-year institutional partnership.",
-    },
-  ],
-  Healthcare: [
-    {
-      name: "Maternity Hospital",
-      location: "Merta city, Rajasthan",
-      impact: "6,360 Deliveries",
-      desc: "Safe maternity care for underserved families.",
-    },
-    {
-      name: "Eye Camps",
-      location: "Tamil nadu and Andhra pradesh",
-      impact: "1,66,011 Screenings",
-      desc: "Free screenings reaching remote communities.",
-    },
-    {
-      name: "Lions Eye Bank OMNI Van",
-      location: "Lions Eye Bank, Egmore, Chennai",
-      impact: "Mobile Care",
-      desc: "An Omni ambulance donated for mobile eye care to villages and to facilitate eye and organ collection.",
-    },
-    {
-      name: "Dialysis Machines",
-      location: "RYA Hospital, chennai",
-      impact: "2 Machines",
-      desc: "Ongoing kidney care infrastructure.",
-    },
-    {
-      name: "Sankara Eye Hospital Block",
-      location: "Chennai",
-      impact: "Block Donation",
-      desc: "Dedicated patient care block.",
-    },
-    {
-      name: "Limb Camps",
-      location: "Multi-region",
-      impact: "2000+ Beneficiaries",
-      desc: "Prosthetic limbs for the differently-abled.",
-    },
-    {
-      name: "Jain Mission Trust OPD",
-      location: "Chikkaballapur, Karnataka",
-      impact: "OPD Room",
-      desc: "Outpatient care infrastructure.",
-    },
-    {
-      name: "Hospital & Medical Facility Support",
-      location: "Jain Mission Trust Hospital, Bangalore",
-      impact: "OPD Room Donation",
-      desc: "Donation of an OPD room to support outpatient care.",
-    },
-    {
-      name: "Cancer Care",
-      location: "RYA Madras Cosmo Foundation",
-      impact: "Cancer Detection Centre",
-      desc: "Support towards the Cancer Detection Centre.",
-    },
-  ],
-  Community: [
-    {
-      name: "Blanket Distribution",
-      location: "Annual",
-      impact: "Winter relief",
-      desc: "Warmth for those without shelter.",
-    },
-    {
-      name: "Food Distribution",
-      location: "Year-round",
-      impact: "Daily meals",
-      desc: "Nutrition support in slums and rural areas.",
-    },
-    {
-      name: "Sadharmik Family Support",
-      location: "Community",
-      impact: "Ongoing",
-      desc: "Quiet support to families in need.",
-    },
-    {
-      name: "Flat Donation",
-      location: "Chennai",
-      impact: "Housing",
-      desc: "Residential support for deserving families.",
-    },
-    {
-      name: "Dharamshala Room",
-      location: "Rajasthan & Gujrat",
-      impact: "Lodging",
-      desc: "Dharamshala Rooms Donatated.",
-    },
-    {
-      name: "Butati Dham Dharamshala",
-      location: "Butati Dham",
-      impact: "Dharamshala Room",
-      desc: "A dharamshala room donated to support pilgrims and visitors.",
-    },
-    {
-      name: "Environmental Initiative",
-      location: "Pan - India",
-      impact: "1,000 Saplings",
-      desc: "1,000 saplings planted as part of the Trust's environmental efforts.",
-    },
-    {
-      name: "Natural Disaster Relief",
-      location: "Tamil Nadu",
-      impact: "Emergency Relief",
-      desc: "Relief provided to people affected by COVID-19 and the Tamil Nadu tsunami.",
-    },
-    {
-      name: "Kapeda Dwar Construction",
-      location: "Kapeda, Rajasthan",
-      impact: "Heritage",
-      desc: "Community gateway construction.",
-    },
-  ],
-  Animal: [
-    {
-      name: "Khwaspura Gaushala Shed",
-      location: "Khwaspura, Rajasthan",
-      impact: "Cattle Shelter",
-      desc: "Built shelter for rescued cattle.",
-    },
-    {
-      name: "Lambiya Gaushala Shed",
-      location: "Lambiya, rajasthan",
-      impact: "Cattle Shelter",
-      desc: "Additional shelter for the herd.",
-    },
-    {
-      name: "Continuous Gaushala Support",
-      location: "Pan - India",
-      impact: "Ongoing",
-      desc: "Recurring care, feed and maintenance.",
-    },
-    {
-      name: "Adinath Jain Trust",
-      location: "Rajasthan",
-      impact: "Animal Welfare",
-      desc: "Long-term support for animal welfare.",
-    },
-    {
-      name: "Cow Shelter and Feeding",
-      location: "Rajasthan",
-      impact: "7 Cow Sheds",
-      desc: "A total of seven cow sheds donated across Rajasthan.",
-    },
-  ],
-};
-
-const timeline = [
-  {
-    year: "2011",
-    title: "Trust Established",
-    text: "Sohan Kanwar Mangilal Tater Charitable Trust begins its journey of service.",
-    icon: Landmark,
-  },
-  {
-    year: "2012–21",
-    title: "Growing Years",
-    text: "Expanding in education and healthcare through annual scholarships and eye camps.",
-    icon: ArrowUpRight,
-  },
-  {
-    year: "2022",
-    title: "10th Scholarship Distribution",
-    text: "A decade of scholarship support, celebrated with a landmark tally.",
-    icon: GraduationCap,
-    stats: ["4,298 students supported", "₹1.66 crore over 13 years"],
-  },
-  {
-    year: "2022",
-    title: "Large-scale Eye Care Initiative — Chennai Metro Mahaveer Club",
-    text: "Eye care support reached communities across Chennai through a large-scale initiative.",
-    icon: Stethoscope,
-    stats: [
-      "1,212 eye camps",
-      "1,67,743 screenings",
-      "46,926 surgeries",
-      "14,281 pairs of spectacles",
-    ],
-  },
-  {
-    year: "2022",
-    title: "Seva Mahostav",
-    text: "A large multi-sector initiative supporting education, healthcare, Gau Seva, eye care, community welfare, Jain institutions and national disaster relief.",
-    icon: HandHeart,
-    stats: ["₹5 crore commitment"],
-  },
-  {
-    year: "2026",
-    title: "14th Scholarship Distribution",
-    text: "Another cohort of students supported in their pursuit of education.",
-    icon: GraduationCap,
-    stats: ["456 students", "₹25.07 lakh in scholarships"],
-  },
-  {
-    year: "2026",
-    title: "Empowering Lives",
-    text: "Mobility and independence restored for those who need it most.",
-    icon: Heart,
-    stats: ["500 individuals supported with limbs and wheelchairs"],
-  },
-];
-
-const partners = [
-  { name: "RYA Hospital", logo: ryaLogo },
-  { name: "Kewal Chand Mohini Bai Daga Dialysis Centre" },
-  { name: "Mahaveer Rajasthani International School", logo: mahaveerLogo },
-  { name: "Sankara Eye Hospital", logo: sankaraLogo },
-  { name: "Lions Eye Bank", logo: lionsLogo },
-  { name: "Jain Mission Trust", logo: jainLogo },
-  { name: "Vivekananda Education Society", logo: vesLogo },
-  { name: "Adinath Jain Trust", logo: adinathLogo },
-  { name: "RMD Care Trust", logo: rmdCareTrustLogo },
-  { name: "Seva Bharathi", logo: sevaBharathiLogo },
-  { name: "Chennai Metro Mahaveer", logo: chennaiMetroMahaveerLogo },
-  {
-    name: "Rajasthani Association Tamil Nadu",
-    logo: rajasthaniAssociationTnLogo,
-  },
-];
-
 /* Gallery */
 const galleryTabs = [
   { id: "All" as const, icon: LayoutGrid, label: "All" },
@@ -448,298 +91,19 @@ const galleryTabs = [
   { id: "Animal Welfare" as const, icon: PawPrint, label: "Animal Welfare" },
 ];
 type GalleryCat = (typeof galleryTabs)[number]["id"];
-const gallery: {
-  cat: Exclude<GalleryCat, "All">;
-  caption: string;
-  // width / height of the image actually shown (previewImg, if set), so the
-  // card's own shape always matches it exactly - no cropping, at any column
-  // width.
-  ratio: number;
-  tone: string;
-  img: string;
-  // Used only for the grid thumbnail when the full `img` (e.g. a whole
-  // newspaper page) doesn't crop well into a photo card; the lightbox still
-  // opens the full `img`.
-  previewImg?: string;
-  hideFromAll?: boolean;
-}[] = [
-  {
-    cat: "Healthcare",
-    caption: "Free Eye Screening Camp Chennai",
-    ratio: 2.346,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: freeEyeScreeningCampChennaiImg,
-  },
-  {
-    cat: "Education",
-    caption: "Annual Scholarship Ceremony Chennai",
-    ratio: 1.5,
-    tone: "from-[#800000] to-[#4d0000]",
-    img: annualScholarshipCeremonyChennaiImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Maternity Ward Inauguration",
-    ratio: 1.794,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: maternityWardInaugurationImg,
-    previewImg: maternityWardInaugurationPreviewImg,
-  },
-  {
-    cat: "Animal Welfare",
-    caption: "Khwaspura Gaushala Shed",
-    ratio: 1.333,
-    tone: "from-[#8FA68E] to-[#4f6651]",
-    img: khwaspuraGaushalaShedImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Sankara Eye Hospital Block",
-    ratio: 1.333,
-    tone: "from-[#800000] to-[#3d0000]",
-    img: sankaraEyeHospitalBlockImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Cataract Surgery Follow-Up",
-    ratio: 2.221,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: cataractSurgeryFollowUpImg,
-  },
-  {
-    cat: "Community",
-    caption: "Food Distribution Drive",
-    ratio: 1.662,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: foodDistributionDriveImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Community",
-    caption: "Room Donation To Dharamshala Lodging",
-    ratio: 2.207,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: roomDonationDharamshalaLodgingImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Newborn Care Unit",
-    ratio: 1.794,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: newbornCareUnitImg,
-    previewImg: newbornCareUnitPreviewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Animal Welfare",
-    caption: "Chaara Godown Nagaur",
-    ratio: 1.794,
-    tone: "from-[#8FA68E] to-[#4f6651]",
-    img: chaaraGodownNagaurImg,
-    previewImg: chaaraGodownNagaurPreviewImg,
-  },
-  {
-    cat: "Community",
-    caption: "Food Distribution Drive",
-    ratio: 0.75,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: foodDistributionDriveNewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Community",
-    caption: "Food Distribution Drive With Akshaya Trust",
-    ratio: 2.165,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: foodDistributionDriveAkshayaTrustImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Prosthetics Distribution",
-    ratio: 1.796,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: prostheticsDistributionImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Community",
-    caption: "Hall Donated In Marudhar Merta City",
-    ratio: 1.754,
-    tone: "from-[#800000] to-[#3d0000]",
-    img: hallDonatedMarudharMertaCityImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption:
-      "MoU Between Our Trust And Sewa Bharti Tamil Nadu For Multi-Specialty Hospital",
-    ratio: 1.643,
-    tone: "from-[#800000] to-[#3d0000]",
-    img: mouSewaBhartiMultiSpecialtyHospitalImg,
-    previewImg: mouSewaBhartiMultiSpecialtyHospitalPreviewImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Multispeciality Hospital Bhoomi Pooja",
-    ratio: 1.5,
-    tone: "from-[#800000] to-[#3d0000]",
-    img: multispecialityHospitalBhoomiPoojaImg,
-  },
-  {
-    cat: "Community",
-    caption: "Food Distribution",
-    ratio: 1.333,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: foodDistributionImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Cataract Surgery With Chennai Metro Mahaveer",
-    ratio: 1.499,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: cataractSurgeryChennaiMetroMahaveerImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Community",
-    caption: "Awarded Rajasthan Shree By Rajasthan Sangh Chennai",
-    ratio: 1.504,
-    tone: "from-[#800000] to-[#4d0000]",
-    img: awardedRajasthanShreeImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Prosthetics Distribution With Adinath Jain Trust Chennai",
-    ratio: 1.333,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: prostheticsDistributionAdinathJainTrustImg,
-  },
-  {
-    cat: "Education",
-    caption: "10th Scholarship Distribution Ceremony",
-    ratio: 1.345,
-    tone: "from-[#800000] to-[#4d0000]",
-    img: tenthScholarshipDistributionImg,
-    previewImg: tenthScholarshipDistributionPreviewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Education",
-    caption: "11th Scholarship Distribution Ceremony",
-    ratio: 1.451,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: eleventhScholarshipDistributionImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Education",
-    caption: "13th Scholarship Distribution To 439 Students",
-    ratio: 1.219,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: thirteenthScholarshipDistributionImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Education",
-    caption: "22 Lakh Scholarship Distribution Ceremony",
-    ratio: 2.09,
-    tone: "from-[#800000] to-[#3d0000]",
-    img: twentyTwoLakhScholarshipDistributionImg,
-    previewImg: twentyTwoLakhScholarshipDistributionPreviewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Education",
-    caption: "Inauguration Of Vivekananda Vidyalaya",
-    ratio: 1.452,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: inaugurationVivekanandaVidyalayaImg,
-    previewImg: inaugurationVivekanandaVidyalayaPreviewImg,
-  },
-  {
-    cat: "Education",
-    caption: "Vivekananda Vidyalaya",
-    ratio: 1.566,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: vivekanandaVidyalayaImg,
-  },
-  {
-    cat: "Education",
-    caption: "Bhoomi Pooja Ceremony — Vivekananda Vidhyalaya",
-    ratio: 0.708,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: bhoomiPoojaCeremonyVivekanandaImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Bhoomi Pooja Ceremony — Multi-speciality Hospital",
-    ratio: 0.922,
-    tone: "from-[#800000] to-[#4d0000]",
-    img: bhoomiPoojaCeremonyHospitalImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Bhoomi Pooja, Cancer Hospital in Goonipalayam",
-    ratio: 2.154,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: bhoomiPoojaCancerHospitalGoonipalayamImg,
-    previewImg: bhoomiPoojaCancerHospitalGoonipalayamPreviewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Cancer and Palliative Care Hospital in Goonipalayam",
-    ratio: 1.468,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: cancerHospitalGoonipalayamPressImg,
-    previewImg: cancerHospitalGoonipalayamPressPreviewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Community",
-    caption: "Shri Sambhavnath Jain Mandir Prathistha Mahamahotsav",
-    ratio: 2.165,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: sambhavnathJainMandirPrathisthaImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Animal Welfare",
-    caption: "Cattle Feeding in Gaushala",
-    ratio: 0.75,
-    tone: "from-[#8FA68E] to-[#4f6651]",
-    img: cattleFeedingGaushalaImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Maternity And Child Care Home Handover",
-    ratio: 2.928,
-    tone: "from-[#800000] to-[#4d0000]",
-    img: maternityChildCareHomeHandoverImg,
-    previewImg: maternityChildCareHomeHandoverPreviewImg,
-    hideFromAll: true,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Maternity Home Plaque Presentation",
-    ratio: 1.432,
-    tone: "from-[#1E3A5F] to-[#142943]",
-    img: maternityHomePlaquePresentationImg,
-  },
-  {
-    cat: "Healthcare",
-    caption: "Maternity Hospital",
-    ratio: 1.488,
-    tone: "from-[#C9A23A] to-[#8a6e1f]",
-    img: maternityHospitalImg,
-    hideFromAll: true,
-  },
-];
+
+const timelineIcons = {
+  Landmark,
+  ArrowUpRight,
+  GraduationCap,
+  Stethoscope,
+  HandHeart,
+  Heart,
+  Users,
+  PawPrint,
+  Eye,
+  Building2,
+};
 
 /* ───────────────────────── PAGE ───────────────────────── */
 
@@ -766,16 +130,15 @@ function Index() {
 /* ───────────────────────── HERO ───────────────────────── */
 
 function Hero() {
-  const stats = useImpactStats();
-  const fmt = (id: string) =>
-    new Intl.NumberFormat("en-IN").format(stats.find((s) => s.id === id)?.value ?? 0);
+  const { impact, hero } = useContent();
+  const fmt = (id: string) => new Intl.NumberFormat("en-IN").format(impact[id] ?? 0);
   return (
     <section
       id="home"
       className="relative hero-backdrop flex items-center pt-24 pb-16 sm:pt-28 sm:pb-20 [@media(min-width:640px)_and_(min-aspect-ratio:1/1)]:min-h-dvh overflow-hidden"
     >
       <img
-        src={heroImage}
+        src={hero.img}
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.60] [mask-image:radial-gradient(ellipse_at_center,black_12%,transparent_98%)] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_12%,transparent_98%)]"
@@ -875,7 +238,8 @@ function Hero() {
 /* ───────────────────────── IMPACT ───────────────────────── */
 
 function Impact() {
-  const impactStats = useImpactStats();
+  const { impact } = useContent();
+  const impactStats = impactFields.map((f) => ({ ...f, value: impact[f.id] ?? 0 }));
   return (
     <section id="impact" className="section-pad bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -926,6 +290,7 @@ function Impact() {
 /* ───────────────────────── FOUNDERS ───────────────────────── */
 
 function Founders() {
+  const { founders } = useContent();
   return (
     <section id="founders" className="section-pad bg-[var(--surface)]">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -937,7 +302,7 @@ function Founders() {
 
         <div className="mt-14 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-10 sm:gap-14">
           {founders.map((f, i) => (
-            <Reveal key={f.name} delay={i * 0.1}>
+            <Reveal key={f.id} delay={i * 0.1}>
               <div className="flex flex-col items-center text-center w-48">
                 <img
                   src={f.img}
@@ -970,8 +335,9 @@ const tabs = [
 ];
 
 function OurWork() {
-  const [tab, setTab] = useState<keyof typeof work>("Education");
-  const items = work[tab];
+  const { work } = useContent();
+  const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("Education");
+  const items = work.filter((w) => w.cat === tab);
 
   return (
     <section id="work" className="section-pad bg-[var(--surface)]">
@@ -1016,7 +382,7 @@ function OurWork() {
           >
             {items.map((p, i) => (
               <motion.div
-                key={p.name}
+                key={p.id}
                 data-cursor="magnetic"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -1061,6 +427,7 @@ function OurWork() {
 /* ───────────────────────── DEEP DIVE ───────────────────────── */
 
 function DeepDive() {
+  const { timeline, reach, partners } = useContent();
   const [activeCity, setActiveCity] = useState<string | null>(null);
   const [zoomedState, setZoomedState] = useState<string | null>(null);
 
@@ -1085,9 +452,9 @@ function DeepDive() {
             />
             <div className="space-y-6">
               {timeline.map((t, i) => {
-                const Icon = t.icon;
+                const Icon = timelineIcons[t.icon];
                 return (
-                  <Reveal key={`${t.year}-${t.title}`} delay={i * 0.03}>
+                  <Reveal key={t.id} delay={i * 0.03}>
                     <div className="relative grid grid-cols-[3.5rem_1fr] sm:grid-cols-[5rem_1fr] gap-3 sm:gap-5 items-start">
                       <div className="pt-3 text-right">
                         <span className="font-display text-sm sm:text-base text-[var(--brand-green)]">
@@ -1108,7 +475,7 @@ function DeepDive() {
                         <p className="mt-1.5 text-sm text-foreground/65 max-w-md">
                           {t.text}
                         </p>
-                        {t.stats && (
+                        {t.stats.length > 0 && (
                           <div className="mt-2.5 flex flex-wrap gap-1.5">
                             {t.stats.map((s) => (
                               <span
@@ -1141,7 +508,7 @@ function DeepDive() {
                 Where we work
               </h3>
               <div className="mt-8 space-y-6">
-                {Object.entries(places).map(([state, cities]) => (
+                {reach.map(({ state, cities }) => (
                   <div key={state}>
                     <button
                       type="button"
@@ -1154,7 +521,7 @@ function DeepDive() {
                       {state}
                     </button>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {cities.map((c) => (
+                      {cities.map(({ name: c }) => (
                         <span
                           key={c}
                           onMouseEnter={() => setActiveCity(c)}
@@ -1203,7 +570,7 @@ function DeepDive() {
                 )}
               </div>
               <div className="mt-4 h-72 sm:h-80 rounded-2xl border border-border overflow-hidden bg-white">
-                <IndiaMap activeCity={activeCity} zoomedState={zoomedState} />
+                <IndiaMap activeCity={activeCity} zoomedState={zoomedState} reach={reach} />
               </div>
               <p className="mt-2 text-center text-xs text-foreground/50">
                 Hover a city, or click a state, to zoom in.
@@ -1229,7 +596,7 @@ function DeepDive() {
           <div className="mt-12 flex flex-wrap rounded-2xl overflow-hidden border border-border">
             {partners.map((p, i) => (
               <Reveal
-                key={p.name}
+                key={p.id}
                 delay={i * 0.03}
                 className="grow min-w-0 basis-1/2 sm:basis-1/3 lg:basis-1/4"
               >
@@ -1265,6 +632,7 @@ function DeepDive() {
 /* ───────────────────────── GALLERY ───────────────────────── */
 
 function Gallery() {
+  const { gallery } = useContent();
   const [cat, setCat] = useState<GalleryCat>("All");
   const [active, setActive] = useState<number | null>(null);
   const items =
@@ -1362,14 +730,14 @@ function Gallery() {
               <AnimatePresence mode="popLayout" initial={false}>
                 {col.map((g) => (
                   <motion.button
-                    key={`${g.caption}-${g.i}`}
+                    key={g.id}
                     data-cursor="plain"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, delay: g.i * 0.02 }}
                     onClick={() => setActive(g.i)}
-                    className={`w-full relative overflow-hidden rounded-2xl ${g.img ? "bg-[var(--surface)]" : `bg-gradient-to-br ${g.tone}`} group block touch-manipulation`}
+                    className="w-full relative overflow-hidden rounded-2xl bg-[var(--surface)] group block touch-manipulation"
                     style={{ aspectRatio: g.ratio }}
                   >
                     {g.img && (
@@ -1453,11 +821,7 @@ function Gallery() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className={`relative rounded-3xl overflow-hidden ${
-                items[active].img
-                  ? "bg-[var(--surface)]"
-                  : `bg-gradient-to-br ${items[active].tone} w-full max-w-2xl aspect-[4/3]`
-              }`}
+              className="relative rounded-3xl overflow-hidden bg-[var(--surface)]"
               onClick={(e) => e.stopPropagation()}
             >
               {items[active].img && (
@@ -1493,6 +857,7 @@ function Gallery() {
 /* ───────────────────────── DONATE ───────────────────────── */
 
 function Donate() {
+  const { bank } = useContent();
   return (
     <section id="donate" className="section-pad bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -1523,13 +888,10 @@ function Donate() {
               </h3>
               <dl className="mt-8 divide-y divide-border">
                 {[
-                  [
-                    "Account Name",
-                    "Sohan Kanwar Mangilal Tater Charitable Trust",
-                  ],
-                  ["Bank Name", "RBL Bank"],
-                  ["Account Number", "309841435214"],
-                  ["IFSC", "RATN0000187"],
+                  ["Account Name", bank.accountName],
+                  ["Bank Name", bank.bankName],
+                  ["Account Number", bank.accountNumber],
+                  ["IFSC", bank.ifsc],
                 ].map(([k, v]) => (
                   <div key={k} className="py-4 flex justify-between gap-6">
                     <dt className="text-sm text-foreground/55 uppercase tracking-wider">
@@ -1594,6 +956,7 @@ function TrustReportVideo() {
 }
 
 function About() {
+  const { trustees } = useContent();
   return (
     <section id="about" className="section-pad bg-[var(--surface)]">
       <div className="mx-auto max-w-7xl px-6 lg:px-10 space-y-14 lg:space-y-24">
@@ -1700,7 +1063,7 @@ function About() {
           </Reveal>
           <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-10">
             {trustees.map((t, i) => (
-              <Reveal key={t.name} delay={i * 0.05}>
+              <Reveal key={t.id} delay={i * 0.05}>
                 <div className="flex flex-col items-center text-center">
                   <img
                     src={t.img}
@@ -1753,6 +1116,7 @@ function About() {
 /* ───────────────────────── CONTACT ───────────────────────── */
 
 function Contact() {
+  const { contact } = useContent();
   return (
     <section id="contact" className="section-pad bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -1772,15 +1136,11 @@ function Contact() {
                 {
                   icon: MapPin,
                   title: "Address",
-                  text: "No 52, Maddox Street, 1st Floor, Vepery, Chennai 600007",
+                  text: contact.address,
                 },
-                { icon: Phone, title: "Phone", text: "+91 98419 11058" },
-                { icon: Mail, title: "Email", text: "smtaterctrust@gmail.com" },
-                {
-                  icon: Clock,
-                  title: "Office hours",
-                  text: "Mon - Sat · 10:00 AM – 6:00 PM",
-                },
+                { icon: Phone, title: "Phone", text: contact.phone },
+                { icon: Mail, title: "Email", text: contact.email },
+                { icon: Clock, title: "Office hours", text: contact.hours },
               ].map((c) => (
                 <div key={c.title} className="flex gap-5">
                   <div className="shrink-0 h-12 w-12 rounded-xl bg-[var(--brand-gold)]/40 inline-flex items-center justify-center text-[var(--brand-brown)]">

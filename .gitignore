@@ -12,3 +12,5 @@ dist
 /assets to update/**
 /attached_assets/
 /attached_assets/**
+
+/public/uploads/
