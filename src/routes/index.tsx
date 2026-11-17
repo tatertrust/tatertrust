@@ -38,8 +38,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title:
-          "Sohan Kanwar Mangilal Tater Charitable Trust",
+        title: "Sohan Kanwar Mangilal Tater Charitable Trust",
       },
       {
         name: "description",
@@ -57,15 +56,41 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  // ?preview=<token> shows an admin's unsaved draft (see /admin → Preview).
+  validateSearch: (s: Record<string, unknown>): { preview?: string } =>
+    typeof s.preview === "string" ? { preview: s.preview } : {},
+  loaderDeps: ({ search }) => ({ preview: search.preview }),
   // Content is editable at /admin, so render per request; the CDN caches it for a minute.
-  loader: () => getSiteContent(),
-  headers: () => ({
-    "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=600",
+  loader: ({ deps }) =>
+    getSiteContent({
+      data: {
+        preview: /^[a-f0-9]{32}$/.test(deps.preview ?? "")
+          ? deps.preview
+          : undefined,
+      },
+    }),
+  headers: ({ loaderData }) => ({
+    "Cache-Control": loaderData?.preview
+      ? "private, no-store"
+      : "public, max-age=0, s-maxage=60, stale-while-revalidate=600",
   }),
   component: Index,
 });
 
-const useContent = (): Content => Route.useLoaderData();
+const useContent = (): Content => Route.useLoaderData().content;
+
+function PreviewBanner() {
+  if (!Route.useLoaderData().preview) return null;
+  return (
+    <div
+      role="status"
+      className="fixed inset-x-0 bottom-0 z-[70] bg-[var(--brand-brown)] px-4 py-3 text-center text-sm text-white shadow-lg"
+    >
+      <b>Preview</b> — these changes are <b>not published</b> yet. Close this
+      tab and click <b>Save changes</b> in the admin to publish them.
+    </div>
+  );
+}
 
 /* ───────────────────────── DATA ───────────────────────── */
 
@@ -111,6 +136,7 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
+      <PreviewBanner />
       <main>
         <Hero />
         <Impact />
@@ -131,7 +157,8 @@ function Index() {
 
 function Hero() {
   const { impact, hero } = useContent();
-  const fmt = (id: string) => new Intl.NumberFormat("en-IN").format(impact[id] ?? 0);
+  const fmt = (id: string) =>
+    new Intl.NumberFormat("en-IN").format(impact[id] ?? 0);
   return (
     <section
       id="home"
@@ -226,9 +253,13 @@ function Hero() {
             {fmt("eyeSurgeries")} Eye Surgeries
           </span>
           <span className="text-border">·</span>
-          <span className="whitespace-nowrap font-bold">{fmt("babies")} Deliveries</span>
+          <span className="whitespace-nowrap font-bold">
+            {fmt("babies")} Deliveries
+          </span>
           <span className="text-border">·</span>
-          <span className="whitespace-nowrap font-bold">{fmt("eyeCamps")} Eye Camps</span>
+          <span className="whitespace-nowrap font-bold">
+            {fmt("eyeCamps")} Eye Camps
+          </span>
         </div>
       </div>
     </section>
@@ -239,7 +270,10 @@ function Hero() {
 
 function Impact() {
   const { impact } = useContent();
-  const impactStats = impactFields.map((f) => ({ ...f, value: impact[f.id] ?? 0 }));
+  const impactStats = impactFields.map((f) => ({
+    ...f,
+    value: impact[f.id] ?? 0,
+  }));
   return (
     <section id="impact" className="section-pad bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -435,7 +469,7 @@ function DeepDive() {
     <section className="section-pad bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10 space-y-16 lg:space-y-28">
         {/* Timeline */}
-        <div>
+        <div id="timeline" className="scroll-mt-24">
           <Reveal>
             <p className="text-xs tracking-[0.22em] uppercase text-[var(--brand-green)] font-medium">
               Timeline
@@ -498,7 +532,7 @@ function DeepDive() {
         </div>
 
         {/* Geo + Chart */}
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div id="reach" className="grid lg:grid-cols-2 gap-12 scroll-mt-24">
           <Reveal>
             <div className="bg-[var(--surface)] rounded-3xl p-6 sm:p-8 lg:p-10 h-full border border-border">
               <p className="text-xs tracking-[0.22em] uppercase text-[var(--brand-green)] font-medium">
@@ -570,7 +604,11 @@ function DeepDive() {
                 )}
               </div>
               <div className="mt-4 h-72 sm:h-80 rounded-2xl border border-border overflow-hidden bg-white">
-                <IndiaMap activeCity={activeCity} zoomedState={zoomedState} reach={reach} />
+                <IndiaMap
+                  activeCity={activeCity}
+                  zoomedState={zoomedState}
+                  reach={reach}
+                />
               </div>
               <p className="mt-2 text-center text-xs text-foreground/50">
                 Hover a city, or click a state, to zoom in.
@@ -971,7 +1009,10 @@ function About() {
                 A quiet legacy of service.
               </h2>
             </Reveal>
-            <div className="space-y-6 text-lg text-foreground/75 leading-relaxed" data-nosnippet>
+            <div
+              className="space-y-6 text-lg text-foreground/75 leading-relaxed"
+              data-nosnippet
+            >
               <Reveal delay={0.1}>
                 <p>
                   Established in{" "}
@@ -985,17 +1026,17 @@ function About() {
               </Reveal>
               <Reveal delay={0.15}>
                 <p>
-                  Across more than a decade, the Trust has worked steadily across
-                  two states - funding scholarships, building healthcare
+                  Across more than a decade, the Trust has worked steadily
+                  across two states - funding scholarships, building healthcare
                   infrastructure, supporting maternity care, and standing
                   alongside communities, animals, and institutions in need.
                 </p>
               </Reveal>
               <Reveal delay={0.2}>
                 <p>
-                  The work is named for the families behind it but belongs to the
-                  people it serves: students, patients, mothers, elders, and the
-                  silent rural backbone of India.
+                  The work is named for the families behind it but belongs to
+                  the people it serves: students, patients, mothers, elders, and
+                  the silent rural backbone of India.
                 </p>
               </Reveal>
             </div>

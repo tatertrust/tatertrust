@@ -9,7 +9,9 @@ import {
 } from "react";
 import {
   CheckCircle2,
+  Eye,
   ExternalLink,
+  History,
   KeyRound,
   Loader2,
   LogOut,
@@ -20,6 +22,7 @@ import trustLogo from "@/assets/trust-logo-upscaled.webp";
 import { EDITORS, SECTION_INFO } from "@/components/admin/editors";
 import { PasswordInput, btn, inputCls } from "@/components/admin/fields";
 import {
+  LOG_VIEWER,
   ROLE_IDS,
   ROLES,
   type Content,
@@ -28,7 +31,9 @@ import {
 } from "@/lib/content";
 import {
   changeOwnPassword,
+  createPreview,
   getAdminState,
+  getChangeLog,
   login,
   logout,
   resetUserPassword,
@@ -230,7 +235,7 @@ function LoginPage({
 
 /* ───────────── Dashboard ───────────── */
 
-type View = SectionId | "users" | "account";
+type View = SectionId | "users" | "account" | "log";
 
 function Dashboard({
   role,
@@ -253,6 +258,9 @@ function Dashboard({
     })),
     ...(role === "super"
       ? [{ id: "users" as View, label: "Users & passwords" }]
+      : []),
+    ...(role === LOG_VIEWER
+      ? [{ id: "log" as View, label: "Change log" }]
       : []),
     { id: "account", label: "My password" },
   ];
@@ -344,6 +352,7 @@ function Dashboard({
                 }`}
               >
                 {v.id === "users" && <Users size={16} />}
+                {v.id === "log" && <History size={16} />}
                 {v.id === "account" && <KeyRound size={16} />}
                 {v.label}
               </button>
@@ -373,7 +382,9 @@ function Dashboard({
 
         <main className="min-w-0 px-4 py-6 sm:px-8 lg:py-10">
           <div className="mx-auto max-w-3xl">
-            {view === "users" ? (
+            {view === "log" ? (
+              <ChangeLogPanel />
+            ) : view === "users" ? (
               <UsersPanel
                 usersWithPassword={usersWithPassword}
                 onChanged={refetch}
@@ -416,6 +427,21 @@ function PanelHeader({ title, help }: { title: string; help: string }) {
 
 /* ───────────── Section editor with sticky save bar ───────────── */
 
+// Where each section is on the homepage, so Preview opens right at it.
+const PREVIEW_ANCHORS: Record<SectionId, string> = {
+  hero: "home",
+  impact: "impact",
+  founders: "founders",
+  work: "work",
+  timeline: "timeline",
+  reach: "reach",
+  partners: "recognition",
+  trustees: "about",
+  gallery: "gallery",
+  bank: "donate",
+  contact: "contact",
+};
+
 function SectionPanel<K extends SectionId>({
   section,
   initial,
@@ -444,6 +470,25 @@ function SectionPanel<K extends SectionId>({
     onChange: (v: Content[K]) => void;
     imagesOnly: boolean;
   }) => ReactNode;
+
+  async function preview() {
+    // Open the tab now: browsers block pop-ups opened after waiting on the server.
+    const tab = window.open("", "_blank");
+    setStatus(null);
+    try {
+      const token = await createPreview({ data: { section, data: draft } });
+      const url = `/?preview=${token}#${PREVIEW_ANCHORS[section]}`;
+      if (tab) tab.location.href = url;
+      else
+        setStatus({
+          ok: false,
+          msg: "Please allow pop-ups to see the preview.",
+        });
+    } catch (e) {
+      tab?.close();
+      setStatus({ ok: false, msg: errMsg(e) });
+    }
+  }
 
   async function save() {
     setBusy(true);
@@ -499,7 +544,15 @@ function SectionPanel<K extends SectionId>({
               <span className="text-foreground/50">All changes saved.</span>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={btn.secondary}
+              disabled={!dirty || busy}
+              onClick={preview}
+            >
+              <Eye size={16} /> Preview
+            </button>
             <button
               type="button"
               className={btn.secondary}
@@ -523,6 +576,114 @@ function SectionPanel<K extends SectionId>({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ───────────── Change log (Developer only) ───────────── */
+
+function ChangeLogPanel() {
+  const { data, isPending, error, refetch, isFetching } = useQuery({
+    queryKey: ["change-log"],
+    queryFn: () => getChangeLog(),
+  });
+  const [who, setWho] = useState<Role | "all">("all");
+  const filterId = useId();
+  const entries = (data ?? []).filter((e) => who === "all" || e.who === who);
+
+  return (
+    <div>
+      <PanelHeader
+        title="Change log"
+        help="Every save and password change, newest first. Only you (Developer) can see this."
+      />
+      <div className="mb-5 flex flex-wrap items-end gap-3">
+        <div className="space-y-1.5">
+          <label
+            htmlFor={filterId}
+            className="block text-sm font-medium text-[var(--brand-brown)]"
+          >
+            Show changes by
+          </label>
+          <select
+            id={filterId}
+            className={inputCls}
+            value={who}
+            onChange={(e) => setWho(e.target.value as Role | "all")}
+          >
+            <option value="all">Everyone</option>
+            {ROLE_IDS.map((r) => (
+              <option key={r} value={r}>
+                {ROLES[r].label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="button"
+          className={btn.secondary}
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          {isFetching && <Loader2 size={16} className="animate-spin" />}
+          Refresh
+        </button>
+      </div>
+
+      {isPending ? (
+        <Loader2
+          className="mx-auto mt-10 animate-spin text-foreground/40"
+          aria-label="Loading"
+        />
+      ) : error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {errMsg(error)}
+        </p>
+      ) : entries.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-foreground/55">
+          No changes recorded yet.
+        </p>
+      ) : (
+        <ol className="space-y-3">
+          {entries.map((e, i) => (
+            <li
+              key={`${e.at}-${i}`}
+              className="rounded-2xl border border-border bg-background p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="rounded-full bg-[var(--brand-brown)]/10 px-3 py-1 text-xs font-medium text-[var(--brand-brown)]">
+                  {ROLES[e.who]?.label ?? e.who}
+                </span>
+                <span className="font-medium text-[var(--brand-brown)]">
+                  {e.section
+                    ? `Saved ${SECTION_INFO[e.section]?.label ?? e.section}`
+                    : e.what}
+                </span>
+                <time
+                  dateTime={new Date(e.at).toISOString()}
+                  className="ml-auto text-xs text-foreground/55"
+                >
+                  {new Date(e.at).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </time>
+              </div>
+              {e.details.length > 0 ? (
+                <ul className="mt-3 space-y-1 text-sm text-foreground/75 list-disc pl-5 break-words">
+                  {e.details.map((d, j) => (
+                    <li key={j}>{d}</li>
+                  ))}
+                </ul>
+              ) : e.section ? (
+                <p className="mt-2 text-sm text-foreground/55">
+                  No visible changes.
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

@@ -277,6 +277,84 @@ export function withoutImages(v: unknown): unknown {
   return v;
 }
 
+/* ── Change log ── */
+
+// Only this role sees the change log.
+export const LOG_VIEWER: Role = "developer";
+
+const FIELD_LABELS: Record<string, string> = {
+  ...Object.fromEntries(impactFields.map((f) => [f.id, f.label])),
+  accountName: "Account name",
+  bankName: "Bank name",
+  accountNumber: "Account number",
+  ifsc: "IFSC",
+  hours: "Office hours",
+  text: "Description",
+  desc: "Description",
+  impact: "Highlight badge",
+  cat: "Category",
+  stats: "Highlights",
+  hideFromAll: "Hidden from All",
+};
+
+type Obj = Record<string, unknown>;
+const short = (v: unknown) => {
+  const s =
+    v === undefined ? "" : typeof v === "string" ? v : JSON.stringify(v);
+  return s.length > 60 ? `${s.slice(0, 57)}…` : s;
+};
+const titleOf = (x: Obj) =>
+  String(
+    ["name", "caption", "title", "state"].map((k) => x[k]).find(Boolean) ??
+      x.id,
+  );
+
+function fieldChanges(a: Obj, b: Obj) {
+  const out = new Set<string>();
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (
+      k === "id" ||
+      k === "ratio" ||
+      JSON.stringify(a[k]) === JSON.stringify(b[k])
+    )
+      continue;
+    out.add(
+      IMAGE_KEYS.has(k)
+        ? "photo changed"
+        : `${FIELD_LABELS[k] ?? k[0].toUpperCase() + k.slice(1)}: “${short(a[k])}” → “${short(b[k])}”`,
+    );
+  }
+  return [...out];
+}
+
+// Human-readable lines describing what a save changed, for the change log.
+export function describeChange(before: unknown, after: unknown): string[] {
+  if (!Array.isArray(before) || !Array.isArray(after))
+    return fieldChanges((before ?? {}) as Obj, (after ?? {}) as Obj);
+  const A = new Map((before as Obj[]).map((x) => [x.id, x]));
+  const B = new Map((after as Obj[]).map((x) => [x.id, x]));
+  const out: string[] = [];
+  for (const x of after as Obj[])
+    if (!A.has(x.id)) out.push(`Added “${titleOf(x)}”`);
+  for (const x of before as Obj[])
+    if (!B.has(x.id)) out.push(`Removed “${titleOf(x)}”`);
+  for (const x of after as Obj[]) {
+    const old = A.get(x.id);
+    const f = old ? fieldChanges(old, x) : [];
+    if (f.length) out.push(`Edited “${titleOf(old!)}”: ${f.join("; ")}`);
+  }
+  const order = (l: Obj[]) =>
+    l
+      .map((x) => x.id)
+      .filter((id) => A.has(id) && B.has(id))
+      .join();
+  if (order(before as Obj[]) !== order(after as Obj[]))
+    out.push("Changed the order");
+  return out.length > 30
+    ? [...out.slice(0, 30), `…and ${out.length - 30} more`]
+    : out;
+}
+
 /* ── Defaults (the site as it was before the admin panel) ── */
 
 export const defaults: Content = {

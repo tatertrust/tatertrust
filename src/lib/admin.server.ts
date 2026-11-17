@@ -215,3 +215,52 @@ export async function saveUpload(file: File) {
   await writeFile(`public/${name}`, Buffer.from(await file.arrayBuffer()));
   return `/${name}`;
 }
+
+/* ── Preview: unsaved section data, viewable by its secret link for 1 hour ── */
+
+export async function savePreview(section: SectionId, data: unknown) {
+  const token = randomBytes(16).toString("hex");
+  await redis([
+    "SET",
+    `preview:${token}`,
+    JSON.stringify({ section, data }),
+    "EX",
+    3600,
+  ]);
+  return token;
+}
+
+export async function readPreview(
+  token: string,
+): Promise<{ section: SectionId; data: unknown } | null> {
+  if (!redisConfig()) return null;
+  const raw = await redis(["GET", `preview:${token}`]);
+  return typeof raw === "string" ? JSON.parse(raw) : null;
+}
+
+/* ── Change log: newest first, last 1000 kept, per environment ── */
+
+export type LogEntry = {
+  at: number;
+  who: Role;
+  what: string;
+  section?: SectionId;
+  details: string[];
+};
+const logKey = () => `audit:${env()}`;
+
+export async function addLog(entry: Omit<LogEntry, "at">) {
+  if (!redisConfig()) return;
+  await redis([
+    "LPUSH",
+    logKey(),
+    JSON.stringify({ at: Date.now(), ...entry }),
+  ]);
+  await redis(["LTRIM", logKey(), 0, 999]);
+}
+
+export async function readLog(): Promise<LogEntry[]> {
+  if (!redisConfig()) return [];
+  const raw = (await redis(["LRANGE", logKey(), 0, 299])) as string[];
+  return raw.map((r) => JSON.parse(r));
+}

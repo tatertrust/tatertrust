@@ -2,10 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import {
+  addLog,
   currentRole,
   endSession,
   login as doLogin,
   readContent,
+  readLog,
+  readPreview,
+  savePreview,
   saveUpload,
   setPassword,
   usersWithPassword,
@@ -13,17 +17,28 @@ import {
   writeSection,
 } from "./admin.server";
 import {
+  LOG_VIEWER,
   ROLE_IDS,
   ROLES,
   SECTION_IDS,
+  describeChange,
   schemas,
   withoutImages,
+  type Role,
   type SectionId,
 } from "./content";
 
-export const getSiteContent = createServerFn({ method: "GET" }).handler(() =>
-  readContent(),
-);
+const previewToken = z.string().regex(/^[a-f0-9]{32}$/);
+
+// Public. With a valid preview token, one section is swapped for its unsaved draft.
+export const getSiteContent = createServerFn({ method: "GET" })
+  .validator(z.object({ preview: previewToken.optional() }))
+  .handler(async ({ data }) => {
+    const content = await readContent();
+    const draft = data.preview ? await readPreview(data.preview) : null;
+    if (draft) Object.assign(content, { [draft.section]: draft.data });
+    return { content, preview: !!draft };
+  });
 
 export const getAdminState = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -39,7 +54,7 @@ export const getAdminState = createServerFn({ method: "GET" }).handler(
 
 const roleSchema = z
   .enum(ROLE_IDS as [string, ...string[]])
-  .transform((r) => r as keyof typeof ROLES);
+  .transform((r) => r as Role);
 const newPassword = z.string().min(8, "Use at least 8 characters").max(200);
 
 export const login = createServerFn({ method: "POST" })
@@ -62,32 +77,58 @@ async function requireRole() {
   return role;
 }
 
-export const saveSection = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      section: z.enum(SECTION_IDS as [SectionId, ...SectionId[]]),
-      data: z.unknown(),
-    }),
+const sectionInput = z.object({
+  section: z.enum(SECTION_IDS as [SectionId, ...SectionId[]]),
+  data: z.unknown(),
+});
+
+// Shared by Save and Preview: who may change what, and is the data valid.
+async function checkEdit(section: SectionId, data: unknown) {
+  const role = await requireRole();
+  const access = ROLES[role];
+  if (!access.sections.includes(section))
+    throw new Error("You can't edit this section.");
+  const parsed = schemas[section].safeParse(data);
+  if (!parsed.success)
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid data");
+  const current = (await readContent())[section];
+  if (
+    access.imagesOnly.includes(section) &&
+    JSON.stringify(withoutImages(current)) !==
+      JSON.stringify(withoutImages(parsed.data))
   )
+    throw new Error("You can only change photos in this section.");
+  return { role, data: parsed.data, current };
+}
+
+export const saveSection = createServerFn({ method: "POST" })
+  .validator(sectionInput)
   .handler(async ({ data: { section, data } }) => {
-    const role = await requireRole();
-    const access = ROLES[role];
-    if (!access.sections.includes(section))
-      throw new Error("You can't edit this section.");
-    const parsed = schemas[section].safeParse(data);
-    if (!parsed.success)
-      throw new Error(parsed.error.issues[0]?.message ?? "Invalid data");
-    if (access.imagesOnly.includes(section)) {
-      const current = (await readContent())[section];
-      if (
-        JSON.stringify(withoutImages(current)) !==
-        JSON.stringify(withoutImages(parsed.data))
-      )
-        throw new Error("You can only change photos in this section.");
-    }
-    await writeSection(section, parsed.data);
+    const edit = await checkEdit(section, data);
+    await writeSection(section, edit.data);
+    await addLog({
+      who: edit.role,
+      what: "Saved",
+      section,
+      details: describeChange(edit.current, edit.data),
+    });
     return true;
   });
+
+export const createPreview = createServerFn({ method: "POST" })
+  .validator(sectionInput)
+  .handler(async ({ data: { section, data } }) => {
+    const edit = await checkEdit(section, data);
+    return savePreview(section, edit.data);
+  });
+
+export const getChangeLog = createServerFn({ method: "GET" }).handler(
+  async () => {
+    if ((await requireRole()) !== LOG_VIEWER)
+      throw new Error("The change log is only available to the Developer.");
+    return readLog();
+  },
+);
 
 export const uploadImage = createServerFn({ method: "POST" })
   .validator((d: FormData) => {
@@ -111,6 +152,7 @@ export const changeOwnPassword = createServerFn({ method: "POST" })
     if (!(await verifyOwnPassword(role, data.current)))
       throw new Error("Current password is wrong.");
     await setPassword(role, data.next);
+    await addLog({ who: role, what: "Changed own password", details: [] });
     endSession(); // new password bumps the version; sign in again with it
     return true;
   });
@@ -118,8 +160,14 @@ export const changeOwnPassword = createServerFn({ method: "POST" })
 export const resetUserPassword = createServerFn({ method: "POST" })
   .validator(z.object({ role: roleSchema, next: newPassword }))
   .handler(async ({ data }) => {
-    if ((await requireRole()) !== "super")
+    const role = await requireRole();
+    if (role !== "super")
       throw new Error("Only Super Admin can reset passwords.");
     await setPassword(data.role, data.next);
+    await addLog({
+      who: role,
+      what: `Set password for ${ROLES[data.role].label}`,
+      details: [],
+    });
     return true;
   });
