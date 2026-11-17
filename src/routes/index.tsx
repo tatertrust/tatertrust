@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -30,6 +31,7 @@ import { IndiaMap, places } from "@/components/IndiaMap";
 import { Navbar } from "@/components/site/Navbar";
 import { Reveal } from "@/components/site/Reveal";
 import { Counter } from "@/components/site/Counter";
+import { getImpactValues, withValues } from "@/lib/stats.functions";
 import trustLogo from "@/assets/trust-logo-upscaled.webp";
 import heroImage from "@/assets/hero image.jpeg";
 import ryaLogo from "@/assets/rya-logo.png";
@@ -126,22 +128,15 @@ export const Route = createFileRoute("/")({
 
 /* ───────────────────────── DATA ───────────────────────── */
 
-const impactStats = [
-  { value: 4820, label: "Students awarded scholarships" },
-  {
-    value: 19766858,
-    label: "Scholarship amount disbursed",
-    prefix: "₹",
-    format: "inr" as const,
-  },
-  { value: 6360, label: "Babies delivered at Trust's hospital in Merta" },
-  { value: 166011, label: "Eye camp screenings" },
-  { value: 50448, label: "Eye surgeries" },
-  { value: 14339, label: "Spectacles distributed" },
-  { value: 1307, label: "Eye camps conducted" },
-  { value: 2000, label: "Disabled people benefited", suffix: "+" },
-  { value: 2, label: "Dialysis machines donated" },
-];
+// Impact numbers are editable at /admin; defaults live in stats.functions.ts.
+function useImpactStats() {
+  const { data } = useQuery({
+    queryKey: ["impact-values"],
+    queryFn: () => getImpactValues(),
+    staleTime: 60_000,
+  });
+  return withValues(data);
+}
 
 const founders = [
   {
@@ -771,6 +766,9 @@ function Index() {
 /* ───────────────────────── HERO ───────────────────────── */
 
 function Hero() {
+  const stats = useImpactStats();
+  const fmt = (id: string) =>
+    new Intl.NumberFormat("en-IN").format(stats.find((s) => s.id === id)?.value ?? 0);
   return (
     <section
       id="home"
@@ -858,16 +856,16 @@ function Hero() {
             Impact at a glance
           </span>
           <span className="whitespace-nowrap font-bold">
-            4,820 Scholarships
+            {fmt("students")} Scholarships
           </span>
           <span className="text-border">·</span>
           <span className="whitespace-nowrap font-bold">
-            50,448 Eye Surgeries
+            {fmt("eyeSurgeries")} Eye Surgeries
           </span>
           <span className="text-border">·</span>
-          <span className="whitespace-nowrap font-bold">6,360 Deliveries</span>
+          <span className="whitespace-nowrap font-bold">{fmt("babies")} Deliveries</span>
           <span className="text-border">·</span>
-          <span className="whitespace-nowrap font-bold">1,307 Eye Camps</span>
+          <span className="whitespace-nowrap font-bold">{fmt("eyeCamps")} Eye Camps</span>
         </div>
       </div>
     </section>
@@ -877,6 +875,7 @@ function Hero() {
 /* ───────────────────────── IMPACT ───────────────────────── */
 
 function Impact() {
+  const impactStats = useImpactStats();
   return (
     <section id="impact" className="section-pad bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
