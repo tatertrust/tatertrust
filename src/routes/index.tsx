@@ -69,11 +69,18 @@ export const Route = createFileRoute("/")({
           : undefined,
       },
     }),
-  headers: ({ loaderData }) => ({
-    "Cache-Control": loaderData?.preview
-      ? "private, no-store"
-      : "public, max-age=0, s-maxage=60, stale-while-revalidate=600",
-  }),
+  headers: ({ loaderData }): Record<string, string> =>
+    loaderData?.preview
+      ? {
+          "Cache-Control": "private, no-store",
+          // Shown inside the admin dashboard's preview frame.
+          "X-Frame-Options": "SAMEORIGIN",
+          "Content-Security-Policy": "frame-ancestors 'self'",
+        }
+      : {
+          "Cache-Control":
+            "public, max-age=0, s-maxage=60, stale-while-revalidate=600",
+        },
   component: Index,
 });
 
@@ -84,10 +91,9 @@ function PreviewBanner() {
   return (
     <div
       role="status"
-      className="fixed inset-x-0 bottom-0 z-[70] bg-[var(--brand-brown)] px-4 py-3 text-center text-sm text-white shadow-lg"
+      className="fixed inset-x-0 bottom-0 z-[70] bg-[var(--brand-brown)] px-4 py-2.5 text-center text-sm text-white shadow-lg"
     >
-      <b>Preview</b> — these changes are <b>not published</b> yet. Close this
-      tab and click <b>Save changes</b> in the admin to publish them.
+      <b>Preview</b> — not published yet.
     </div>
   );
 }
@@ -1093,7 +1099,7 @@ function About() {
         </div>
 
         {/* Trustees */}
-        <div>
+        <div id="trustees" className="scroll-mt-24">
           <Reveal>
             <p className="text-xs tracking-[0.22em] uppercase text-[var(--brand-green)] font-medium">
               Leadership

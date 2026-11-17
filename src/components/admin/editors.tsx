@@ -508,9 +508,11 @@ function CityAdder({
   onAdd,
 }: {
   dots: { name: string; x: number; y: number }[];
-  onAdd: (c: { name: string; x: number; y: number }) => void;
+  // Returns an error message to show, or nothing on success.
+  onAdd: (c: { name: string; x: number; y: number }) => string | void;
 }) {
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
   const [pt, setPt] = useState<{ x: number; y: number } | null>(null);
   const ready = name.trim() && pt;
   return (
@@ -530,13 +532,20 @@ function CityAdder({
         className={btn.secondary}
         disabled={!ready}
         onClick={() => {
-          onAdd({ name: name.trim(), ...pt! });
+          const err = onAdd({ name: name.trim(), ...pt! });
+          setError(err ?? "");
+          if (err) return;
           setName("");
           setPt(null);
         }}
       >
         <MapPin size={16} /> Add city
       </button>
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -594,7 +603,7 @@ function ReachEditor({ value, onChange }: EditorProps<"reach">) {
             dots={r.cities}
             onAdd={(c) => {
               if (allNames.has(c.name.toLowerCase()))
-                return alert(`${c.name} is already on the map.`);
+                return `${c.name} is already on the map.`;
               up({ cities: [...r.cities, c] });
             }}
           />

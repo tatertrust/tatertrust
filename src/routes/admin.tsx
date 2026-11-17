@@ -3,11 +3,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useEffect,
   useId,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
 } from "react";
 import {
+  ArrowLeft,
   CheckCircle2,
   Eye,
   ExternalLink,
@@ -15,12 +17,21 @@ import {
   KeyRound,
   Loader2,
   LogOut,
+  Monitor,
+  Smartphone,
+  Upload,
   Users,
 } from "lucide-react";
 
 import trustLogo from "@/assets/trust-logo-upscaled.webp";
 import { EDITORS, SECTION_INFO } from "@/components/admin/editors";
-import { PasswordInput, btn, inputCls } from "@/components/admin/fields";
+import {
+  ConfirmProvider,
+  PasswordInput,
+  btn,
+  inputCls,
+  useConfirm,
+} from "@/components/admin/fields";
 import {
   LOG_VIEWER,
   ROLE_IDS,
@@ -82,16 +93,18 @@ function Admin() {
       />
     );
   return (
-    <Dashboard
-      role={data.role}
-      content={data.content}
-      usersWithPassword={data.usersWithPassword}
-      refetch={refetch}
-      onSignedOut={(msg) => {
-        setNotice(msg);
-        refetch();
-      }}
-    />
+    <ConfirmProvider>
+      <Dashboard
+        role={data.role}
+        content={data.content}
+        usersWithPassword={data.usersWithPassword}
+        refetch={refetch}
+        onSignedOut={(msg) => {
+          setNotice(msg);
+          refetch();
+        }}
+      />
+    </ConfirmProvider>
   );
 }
 
@@ -267,24 +280,36 @@ function Dashboard({
   const [view, setView] = useState<View>(views[0].id);
   const [dirty, setDirty] = useState(false);
 
-  // Warn before closing the tab with unsaved edits.
+  // Closing the tab with unpublished edits: only the browser can ask here.
+  // Read through a ref so it's already off the moment "Published" appears.
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
   useEffect(() => {
-    if (!dirty) return;
-    const h = (e: BeforeUnloadEvent) => e.preventDefault();
+    const h = (e: BeforeUnloadEvent) => {
+      if (dirtyRef.current) e.preventDefault();
+    };
     window.addEventListener("beforeunload", h);
     return () => window.removeEventListener("beforeunload", h);
-  }, [dirty]);
+  }, []);
 
-  function go(v: View) {
-    if (v === view) return;
-    if (dirty && !confirm("You have unsaved changes. Leave without saving?"))
-      return;
+  const ask = useConfirm();
+  const leaveOk = async (action: string) =>
+    !dirty ||
+    (await ask({
+      title: "You have unpublished changes",
+      body: `If you ${action} now, your changes in this section will be lost.`,
+      confirmLabel: "Discard changes",
+      danger: true,
+    }));
+
+  async function go(v: View) {
+    if (v === view || !(await leaveOk("leave this section"))) return;
     setDirty(false);
     setView(v);
   }
 
   async function signOut() {
-    if (dirty && !confirm("You have unsaved changes. Sign out anyway?")) return;
+    if (!(await leaveOk("sign out"))) return;
     await logout();
     onSignedOut("You've been signed out.");
   }
@@ -436,7 +461,7 @@ const PREVIEW_ANCHORS: Record<SectionId, string> = {
   timeline: "timeline",
   reach: "reach",
   partners: "recognition",
-  trustees: "about",
+  trustees: "trustees",
   gallery: "gallery",
   bank: "donate",
   contact: "contact",
@@ -462,6 +487,7 @@ function SectionPanel<K extends SectionId>({
     null,
   );
   const [busy, setBusy] = useState(false);
+  const [previewToken, setPreviewToken] = useState<string | null>(null);
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
 
@@ -471,42 +497,29 @@ function SectionPanel<K extends SectionId>({
     imagesOnly: boolean;
   }) => ReactNode;
 
-  async function preview() {
-    // Open the tab now: browsers block pop-ups opened after waiting on the server.
-    const tab = window.open("", "_blank");
-    setStatus(null);
-    try {
-      const token = await createPreview({ data: { section, data: draft } });
-      const url = `/?preview=${token}#${PREVIEW_ANCHORS[section]}`;
-      if (tab) tab.location.href = url;
-      else
-        setStatus({
-          ok: false,
-          msg: "Please allow pop-ups to see the preview.",
-        });
-    } catch (e) {
-      tab?.close();
-      setStatus({ ok: false, msg: errMsg(e) });
-    }
-  }
-
-  async function save() {
+  async function openPreview() {
     setBusy(true);
     setStatus(null);
     try {
-      await saveSection({ data: { section, data: draft } });
-      setSaved(draft);
-      queryClient.invalidateQueries({ queryKey: ["admin-state"] });
-      onSaved();
-      setStatus({
-        ok: true,
-        msg: "Saved. The website will show it within a minute.",
-      });
+      setPreviewToken(await createPreview({ data: { section, data: draft } }));
     } catch (e) {
       setStatus({ ok: false, msg: errMsg(e) });
     } finally {
       setBusy(false);
     }
+  }
+
+  async function publish(token: string) {
+    await saveSection({ data: { token } });
+    onDirty(false);
+    setSaved(draft);
+    setPreviewToken(null);
+    queryClient.invalidateQueries({ queryKey: ["admin-state"] });
+    onSaved();
+    setStatus({
+      ok: true,
+      msg: "Published. The website will show it within a minute.",
+    });
   }
 
   return (
@@ -538,21 +551,15 @@ function SectionPanel<K extends SectionId>({
               </span>
             ) : dirty ? (
               <span className="text-[var(--brand-brown)]">
-                You have unsaved changes.
+                Unpublished changes. Preview them to publish.
               </span>
             ) : (
-              <span className="text-foreground/50">All changes saved.</span>
+              <span className="text-foreground/50">
+                Everything is published.
+              </span>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={btn.secondary}
-              disabled={!dirty || busy}
-              onClick={preview}
-            >
-              <Eye size={16} /> Preview
-            </button>
             <button
               type="button"
               className={btn.secondary}
@@ -568,13 +575,164 @@ function SectionPanel<K extends SectionId>({
               type="button"
               className={btn.primary}
               disabled={!dirty || busy}
-              onClick={save}
+              onClick={openPreview}
             >
-              {busy && <Loader2 size={16} className="animate-spin" />}
-              {busy ? "Saving…" : "Save changes"}
+              {busy ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Eye size={16} />
+              )}
+              Preview &amp; publish
             </button>
           </div>
         </div>
+      </div>
+
+      {previewToken && (
+        <PreviewScreen
+          title={SECTION_INFO[section].label}
+          src={`/?preview=${previewToken}#${PREVIEW_ANCHORS[section]}`}
+          onBack={() => setPreviewToken(null)}
+          onPublish={() => publish(previewToken)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ───────────── Full-screen preview inside the dashboard ───────────── */
+
+function PreviewScreen({
+  title,
+  src,
+  onBack,
+  onPublish,
+}: {
+  title: string;
+  src: string;
+  onBack: () => void;
+  onPublish: () => Promise<void>;
+}) {
+  const [device, setDevice] = useState<"desktop" | "phone">("desktop");
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onBack();
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [busy, onBack]);
+
+  async function publish() {
+    setBusy(true);
+    setError("");
+    try {
+      await onPublish();
+    } catch (e) {
+      setError(errMsg(e));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Preview of ${title}`}
+      className="fixed inset-0 z-[60] flex flex-col bg-[var(--surface)]"
+    >
+      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-background px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-lg text-[var(--brand-brown)]">
+            Preview · {title}
+          </div>
+          <div className="text-xs text-foreground/60">
+            Not published yet. Check it, then publish.
+          </div>
+        </div>
+        <div
+          role="group"
+          aria-label="Screen size"
+          className="hidden sm:flex rounded-full border border-border p-1"
+        >
+          {(["desktop", "phone"] as const).map((d) => (
+            <button
+              key={d}
+              type="button"
+              aria-pressed={device === d}
+              onClick={() => {
+                if (d === device) return;
+                setLoaded(false);
+                setDevice(d);
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-green)] ${
+                device === d
+                  ? "bg-[var(--brand-brown)] text-white"
+                  : "text-foreground/70"
+              }`}
+            >
+              {d === "desktop" ? (
+                <Monitor size={14} />
+              ) : (
+                <Smartphone size={14} />
+              )}
+              {d === "desktop" ? "Desktop" : "Phone"}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            autoFocus
+            className={btn.secondary}
+            disabled={busy}
+            onClick={onBack}
+          >
+            <ArrowLeft size={16} /> Back to editing
+          </button>
+          <button
+            type="button"
+            className={btn.primary}
+            disabled={busy || !loaded}
+            onClick={publish}
+          >
+            {busy ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Upload size={16} />
+            )}
+            {busy ? "Publishing…" : "Publish"}
+          </button>
+        </div>
+      </div>
+      {error && (
+        <p role="alert" className="bg-red-50 px-4 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      <div className="relative flex flex-1 justify-center overflow-hidden sm:p-4">
+        {!loaded && (
+          <Loader2
+            className="absolute top-1/3 animate-spin text-foreground/40"
+            aria-label="Loading preview"
+          />
+        )}
+        <iframe
+          key={device}
+          title={`Preview of ${title}`}
+          src={src}
+          onLoad={() => setLoaded(true)}
+          className={`h-full bg-white ${
+            device === "phone"
+              ? "w-[390px] max-w-full rounded-2xl border border-border shadow-lg"
+              : "w-full sm:rounded-2xl sm:border sm:border-border"
+          }`}
+        />
       </div>
     </div>
   );

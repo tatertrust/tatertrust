@@ -1,4 +1,13 @@
-import { useId, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import {
   ArrowDown,
   ArrowUp,
@@ -21,9 +30,73 @@ export const btn = {
   secondary:
     "inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-[var(--brand-brown)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-green)]",
   icon: "inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground/70 disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-green)]",
+  dangerSolid:
+    "inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-600",
   danger:
     "inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-background text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
 };
+
+/* ── In-dashboard confirmation (instead of the browser's confirm() pop-up) ── */
+
+type ConfirmOptions = {
+  title: string;
+  body?: string;
+  confirmLabel: string;
+  danger?: boolean;
+};
+const ConfirmContext = createContext<(o: ConfirmOptions) => Promise<boolean>>(
+  async () => false,
+);
+// const ask = useConfirm(); if (await ask({...})) { ... }
+export const useConfirm = () => useContext(ConfirmContext);
+
+export function ConfirmProvider({ children }: { children: ReactNode }) {
+  const [req, setReq] = useState<
+    (ConfirmOptions & { resolve: (ok: boolean) => void }) | null
+  >(null);
+  const ask = useCallback(
+    (o: ConfirmOptions) =>
+      new Promise<boolean>((resolve) => setReq({ ...o, resolve })),
+    [],
+  );
+  const close = (ok: boolean) => {
+    req?.resolve(ok);
+    setReq(null);
+  };
+  return (
+    <ConfirmContext.Provider value={ask}>
+      {children}
+      <AlertDialog.Root open={!!req} onOpenChange={(o) => !o && close(false)}>
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-[80] bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-[80] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-border bg-background p-6 shadow-xl focus:outline-none">
+            <AlertDialog.Title className="font-display text-2xl text-[var(--brand-brown)]">
+              {req?.title}
+            </AlertDialog.Title>
+            <AlertDialog.Description
+              className={
+                req?.body ? "mt-2 text-sm text-foreground/70" : "sr-only"
+              }
+            >
+              {req?.body ?? req?.title}
+            </AlertDialog.Description>
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <AlertDialog.Cancel className={btn.secondary}>
+                Cancel
+              </AlertDialog.Cancel>
+              <AlertDialog.Action
+                className={req?.danger ? btn.dangerSolid : btn.primary}
+                onClick={() => close(true)}
+              >
+                {req?.confirmLabel}
+              </AlertDialog.Action>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+    </ConfirmContext.Provider>
+  );
+}
 
 export const inputCls =
   "w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-base text-foreground disabled:bg-[var(--surface)] disabled:text-foreground/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-green)]/40 focus:border-[var(--brand-green)]";
@@ -355,6 +428,7 @@ export function ListEditor<T extends { id: string }>({
   // When `items` is a filtered view, the full list to apply changes to.
   allItems?: T[];
 }) {
+  const ask = useConfirm();
   const all = allItems ?? items;
   const visible = items.map((x) => x.id);
   const update = (id: string, patch: Partial<T>) =>
@@ -403,8 +477,16 @@ export function ListEditor<T extends { id: string }>({
                   type="button"
                   className={btn.danger}
                   aria-label="Delete"
-                  onClick={() => {
-                    if (confirm(`Delete "${title(item) || "this item"}"?`))
+                  onClick={async () => {
+                    const name = title(item);
+                    if (
+                      await ask({
+                        title: name ? `Delete “${name}”?` : "Delete this item?",
+                        body: "It disappears from the website when you publish. Until then you can still Discard.",
+                        confirmLabel: "Delete",
+                        danger: true,
+                      })
+                    )
                       onChange(all.filter((x) => x.id !== item.id));
                   }}
                 >

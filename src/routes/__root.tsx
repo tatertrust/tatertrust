@@ -20,7 +20,9 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">
+          Page not found
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
@@ -48,7 +50,8 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Something went wrong on our end. You can try refreshing or head back
+          home.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -72,78 +75,102 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sohan Kanwar Mangilal Tater Charitable Trust" },
-      {
-        name: "description",
-        content:
-          "Sohan Kanwar Mangilal Tater Charitable Trust, Chennai: education, healthcare and community welfare across Tamil Nadu and Rajasthan since 2011.",
-      },
-      { property: "og:title", content: "Sohan Kanwar Mangilal Tater Charitable Trust" },
-      {
-        property: "og:description",
-        content: "Serving humanity since 2011 — education, healthcare and community welfare.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://tatertrust.org/" },
-      { property: "og:image", content: "https://tatertrust.org/og-image.jpg" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://tatertrust.org/og-image.jpg" },
-      { name: "theme-color", content: "#1E3A5F" },
-      { property: "og:site_name", content: "Tater Trust" },
-      {
-        "script:ld+json": {
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "WebSite",
-              "@id": "https://tatertrust.org/#website",
-              name: "Tater Trust",
-              alternateName: ["Sohan Kanwar Mangilal Tater Charitable Trust", "tatertrust"],
-              url: "https://tatertrust.org/",
-            },
-            {
-              "@type": "NGO",
-              "@id": "https://tatertrust.org/#org",
-              name: "Sohan Kanwar Mangilal Tater Charitable Trust",
-              alternateName: ["Tater Trust", "tatertrust", "SKMT Charitable Trust"],
-              url: "https://tatertrust.org/",
-              logo: "https://tatertrust.org/logo.png",
-              image: "https://tatertrust.org/og-image.jpg",
-              foundingDate: "2011",
-              email: "smtaterctrust@gmail.com",
-              telephone: "+91 98419 11058",
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: "No 52, Maddox Street, 1st Floor, Vepery",
-                addressLocality: "Chennai",
-                addressRegion: "Tamil Nadu",
-                postalCode: "600007",
-                addressCountry: "IN",
-              },
-              areaServed: ["Tamil Nadu", "Rajasthan"],
-            },
-          ],
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+  {
+    head: () => ({
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: "Sohan Kanwar Mangilal Tater Charitable Trust" },
+        {
+          name: "description",
+          content:
+            "Sohan Kanwar Mangilal Tater Charitable Trust, Chennai: education, healthcare and community welfare across Tamil Nadu and Rajasthan since 2011.",
         },
-      },
-    ],
-    links: [
-      { rel: "icon", type: "image/png", sizes: "192x192", href: "/favicon-192.png" },
-      { rel: "apple-touch-icon", href: "/favicon-192.png" },
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "canonical", href: "https://tatertrust.org/" },
-      { rel: "stylesheet", href: appCss },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-});
+        {
+          property: "og:title",
+          content: "Sohan Kanwar Mangilal Tater Charitable Trust",
+        },
+        {
+          property: "og:description",
+          content:
+            "Serving humanity since 2011 — education, healthcare and community welfare.",
+        },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: "https://tatertrust.org/" },
+        {
+          property: "og:image",
+          content: "https://tatertrust.org/og-image.jpg",
+        },
+        { name: "twitter:card", content: "summary_large_image" },
+        {
+          name: "twitter:image",
+          content: "https://tatertrust.org/og-image.jpg",
+        },
+        { name: "theme-color", content: "#1E3A5F" },
+        { property: "og:site_name", content: "Tater Trust" },
+        {
+          "script:ld+json": {
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": "https://tatertrust.org/#website",
+                name: "Tater Trust",
+                alternateName: [
+                  "Sohan Kanwar Mangilal Tater Charitable Trust",
+                  "tatertrust",
+                ],
+                url: "https://tatertrust.org/",
+              },
+              {
+                "@type": "NGO",
+                "@id": "https://tatertrust.org/#org",
+                name: "Sohan Kanwar Mangilal Tater Charitable Trust",
+                alternateName: [
+                  "Tater Trust",
+                  "tatertrust",
+                  "SKMT Charitable Trust",
+                ],
+                url: "https://tatertrust.org/",
+                logo: "https://tatertrust.org/logo.png",
+                image: "https://tatertrust.org/og-image.jpg",
+                foundingDate: "2011",
+                email: "smtaterctrust@gmail.com",
+                telephone: "+91 98419 11058",
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: "No 52, Maddox Street, 1st Floor, Vepery",
+                  addressLocality: "Chennai",
+                  addressRegion: "Tamil Nadu",
+                  postalCode: "600007",
+                  addressCountry: "IN",
+                },
+                areaServed: ["Tamil Nadu", "Rajasthan"],
+              },
+            ],
+          },
+        },
+      ],
+      links: [
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "192x192",
+          href: "/favicon-192.png",
+        },
+        { rel: "apple-touch-icon", href: "/favicon-192.png" },
+        { rel: "icon", type: "image/png", href: "/favicon.png" },
+        { rel: "canonical", href: "https://tatertrust.org/" },
+        { rel: "stylesheet", href: appCss },
+      ],
+    }),
+    shellComponent: RootShell,
+    component: RootComponent,
+    notFoundComponent: NotFoundComponent,
+    errorComponent: ErrorComponent,
+  },
+);
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -163,7 +190,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const isAdmin = useRouterState({ select: (s) => s.location.pathname.startsWith("/admin") });
+  const isAdmin = useRouterState({
+    select: (s) => s.location.pathname.startsWith("/admin"),
+  });
 
   return (
     <QueryClientProvider client={queryClient}>

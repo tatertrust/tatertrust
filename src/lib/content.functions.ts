@@ -101,15 +101,20 @@ async function checkEdit(section: SectionId, data: unknown) {
   return { role, data: parsed.data, current };
 }
 
+// Publishing requires a preview: the client sends the preview token and the
+// server publishes exactly the data that was previewed.
 export const saveSection = createServerFn({ method: "POST" })
-  .validator(sectionInput)
-  .handler(async ({ data: { section, data } }) => {
-    const edit = await checkEdit(section, data);
-    await writeSection(section, edit.data);
+  .validator(z.object({ token: previewToken }))
+  .handler(async ({ data: { token } }) => {
+    const draft = await readPreview(token);
+    if (!draft)
+      throw new Error("This preview has expired. Please preview again.");
+    const edit = await checkEdit(draft.section, draft.data);
+    await writeSection(draft.section, edit.data);
     await addLog({
       who: edit.role,
       what: "Saved",
-      section,
+      section: draft.section,
       details: describeChange(edit.current, edit.data),
     });
     return true;
